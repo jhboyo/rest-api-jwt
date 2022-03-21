@@ -13,7 +13,7 @@ class EventTest {
                 .name("valeos")
                 .description("valeos is...")
                 .build();
-        
+
         assertThat(event).isNotNull();
     }
 }
