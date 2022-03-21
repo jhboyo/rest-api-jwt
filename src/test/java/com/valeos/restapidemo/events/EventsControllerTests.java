@@ -40,10 +40,10 @@ public class EventsControllerTests {
         EventDto event = EventDto.builder()
                 .name("valeos")
                 .description("valeos is..")
-                .beginEnrollmentDateTime(LocalDateTime.of(2022,03,22,17,53))
-                .closeEnrollmentDateTime(LocalDateTime.of(2022,03,30,17,53))
-                .beginEventDateTime(LocalDateTime.of(2022,04,1,9,00))
-                .endEventDateTime(LocalDateTime.of(2022,04,3,17,00))
+                .beginEnrollmentDateTime(LocalDateTime.of(2022, 03, 22, 17, 53))
+                .closeEnrollmentDateTime(LocalDateTime.of(2022, 03, 30, 17, 53))
+                .beginEventDateTime(LocalDateTime.of(2022, 04, 1, 9, 00))
+                .endEventDateTime(LocalDateTime.of(2022, 04, 3, 17, 00))
                 .basePrice(100)
                 .maxPrice(200)
                 .limitOfEnrollment(100)
@@ -74,7 +74,6 @@ public class EventsControllerTests {
     }
 
 
-
     @Test
     public void createEvent_BadRequest() throws Exception {
 
@@ -82,10 +81,10 @@ public class EventsControllerTests {
                 .id(100)
                 .name("valeos")
                 .description("valeos is..")
-                .beginEnrollmentDateTime(LocalDateTime.of(2022,03,22,17,53))
-                .closeEnrollmentDateTime(LocalDateTime.of(2022,03,30,17,53))
-                .beginEventDateTime(LocalDateTime.of(2022,04,1,9,00))
-                .endEventDateTime(LocalDateTime.of(2022,04,3,17,00))
+                .beginEnrollmentDateTime(LocalDateTime.of(2022, 03, 22, 17, 53))
+                .closeEnrollmentDateTime(LocalDateTime.of(2022, 03, 30, 17, 53))
+                .beginEventDateTime(LocalDateTime.of(2022, 04, 1, 9, 00))
+                .endEventDateTime(LocalDateTime.of(2022, 04, 3, 17, 00))
                 .basePrice(100)
                 .maxPrice(200)
                 .limitOfEnrollment(100)
@@ -106,6 +105,44 @@ public class EventsControllerTests {
                         .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
+        ;
+    }
+
+
+    @Test
+    public void createEvent_BadRequest_Empty_Input() throws Exception {
+
+        EventDto eventDto = EventDto.builder().build();
+
+        this.mockMvc.perform(post("/api/events")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(eventDto))
+                    )
+                   .andExpect(status().isBadRequest())
                 ;
+    }
+
+    @Test
+    public void createEvent_BadRequest_Wrong_Input() throws Exception {
+
+        EventDto eventDto = EventDto.builder()
+                                    .name("valeos")
+                                    .description("valeos is..")
+                                    .beginEnrollmentDateTime(LocalDateTime.of(2022, 03, 22, 17, 53))
+                                    .closeEnrollmentDateTime(LocalDateTime.of(2022, 03, 21, 17, 53))
+                                    .beginEventDateTime(LocalDateTime.of(2022, 04, 1, 9, 00))
+                                    .endEventDateTime(LocalDateTime.of(2022, 04, 3, 17, 00))
+                                    .basePrice(1000)
+                                    .maxPrice(200)
+                                    .limitOfEnrollment(100)
+                                    .location("seoul square")
+                                    .build();
+
+        this.mockMvc.perform(post("/api/events")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(eventDto))
+                )
+                .andExpect(status().isBadRequest())
+        ;
     }
 }

@@ -24,12 +24,12 @@ dependencies {
     implementation 'com.h2database:h2'
     implementation 'org.postgresql:postgresql'
     implementation 'org.testng:testng:7.1.0'
-    implementation 'org.testng:testng:7.1.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.1.0'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.6.4'
 
 
 
