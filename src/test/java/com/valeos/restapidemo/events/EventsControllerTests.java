@@ -1,13 +1,14 @@
 package com.valeos.restapidemo.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,11 +17,12 @@ import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest
+//@WebMvcTest
+@SpringBootTest
+@AutoConfigureMockMvc
 public class EventsControllerTests {
 
     @Autowired
@@ -29,13 +31,13 @@ public class EventsControllerTests {
     @Autowired
     ObjectMapper objectMapper;
 
-    @MockBean
-    EventRepository eventRepository;
+//    @MockBean
+//    EventRepository eventRepository;
 
     @Test
     public void createEvent() throws Exception {
 
-        Event event = Event.builder()
+        EventDto event = EventDto.builder()
                 .name("valeos")
                 .description("valeos is..")
                 .beginEnrollmentDateTime(LocalDateTime.of(2022,03,22,17,53))
@@ -46,12 +48,15 @@ public class EventsControllerTests {
                 .maxPrice(200)
                 .limitOfEnrollment(100)
                 .location("seoul square")
+//                .free(true)
+//                .offline(false)
+//                .eventStatus(EventStatus.PUBLISHED)
                 .build();
 
-        event.setId(10);
+//        event.setId(10);
 
         // Mockito 객체로 실제 저장은 null 로 되기 때문에 아래 코드 작성
-        Mockito.when(eventRepository.save(event)).thenReturn(event);
+//        Mockito.when(eventRepository.save(event)).thenReturn(event);
 
         mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -59,6 +64,48 @@ public class EventsControllerTests {
                         .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("id").exists());
+                .andExpect(jsonPath("id").exists())
+                .andExpect(header().exists(HttpHeaders.LOCATION))
+                .andExpect(header().string("Content-Type", MediaTypes.HAL_JSON_VALUE))
+                .andExpect((jsonPath("id").value(Matchers.not(100))))
+                .andExpect((jsonPath("free").value(Matchers.not(true))))
+                .andExpect((jsonPath("eventStatus").value(EventStatus.DRAFT.name())))
+        ;
+    }
+
+
+
+    @Test
+    public void createEvent_BadRequest() throws Exception {
+
+        Event event = Event.builder()
+                .id(100)
+                .name("valeos")
+                .description("valeos is..")
+                .beginEnrollmentDateTime(LocalDateTime.of(2022,03,22,17,53))
+                .closeEnrollmentDateTime(LocalDateTime.of(2022,03,30,17,53))
+                .beginEventDateTime(LocalDateTime.of(2022,04,1,9,00))
+                .endEventDateTime(LocalDateTime.of(2022,04,3,17,00))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("seoul square")
+                .free(true)
+                .offline(false)
+                .eventStatus(EventStatus.PUBLISHED)
+                .build();
+
+//        event.setId(10);
+
+        // Mockito 객체로 실제 저장은 null 로 되기 때문에 아래 코드 작성
+//        Mockito.when(eventRepository.save(event)).thenReturn(event);
+
+        mockMvc.perform(post("/api/events")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON)
+                        .content(objectMapper.writeValueAsString(event)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                ;
     }
 }
