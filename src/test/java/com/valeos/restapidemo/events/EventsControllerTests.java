@@ -1,7 +1,6 @@
 package com.valeos.restapidemo.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +41,7 @@ public class EventsControllerTests {
 
         EventDto event = EventDto.builder()
                 .name("valeos")
-                .description("valeos is..")
+                .description("valeos is")
                 .beginEnrollmentDateTime(LocalDateTime.of(2022, 03, 22, 17, 53))
                 .closeEnrollmentDateTime(LocalDateTime.of(2022, 03, 30, 17, 53))
                 .beginEventDateTime(LocalDateTime.of(2022, 04, 1, 9, 00))
@@ -51,9 +50,6 @@ public class EventsControllerTests {
                 .maxPrice(200)
                 .limitOfEnrollment(100)
                 .location("seoul square")
-//                .free(true)
-//                .offline(false)
-//                .eventStatus(EventStatus.PUBLISHED)
                 .build();
 
 //        event.setId(10);
@@ -69,10 +65,13 @@ public class EventsControllerTests {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("id").exists())
                 .andExpect(header().exists(HttpHeaders.LOCATION))
-                .andExpect(header().string("Content-Type", MediaTypes.HAL_JSON_VALUE))
-                .andExpect((jsonPath("id").value(Matchers.not(100))))
-                .andExpect((jsonPath("free").value(Matchers.not(true))))
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE+";charset=UTF-8"))
+                .andExpect((jsonPath("free").value(false)))
+                .andExpect((jsonPath("offline").value(true)))
                 .andExpect((jsonPath("eventStatus").value(EventStatus.DRAFT.name())))
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.query-events").exists())
+                .andExpect(jsonPath("_links.update-event").exists())
         ;
     }
 
@@ -106,6 +105,7 @@ public class EventsControllerTests {
 
         mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
                         .accept(MediaTypes.HAL_JSON)
                         .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
@@ -123,6 +123,7 @@ public class EventsControllerTests {
 
         this.mockMvc.perform(post("/api/events")
                     .contentType(MediaType.APPLICATION_JSON)
+                    .characterEncoding("UTF-8")
                     .content(objectMapper.writeValueAsString(eventDto))
                     )
                    .andExpect(status().isBadRequest())
@@ -149,6 +150,7 @@ public class EventsControllerTests {
 
         this.mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("UTF-8")
                         .content(objectMapper.writeValueAsString(eventDto)))
                         .andDo(print())
                         .andExpect(status().isBadRequest())

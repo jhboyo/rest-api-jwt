@@ -1,7 +1,9 @@
 package com.valeos.restapidemo.events;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -14,7 +16,15 @@ import java.net.URI;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
-
+/**
+ * ResourceSupport is now RepresentationModel
+ *
+ * Resource is now EntityModel -> 데이터 + 링
+ *
+ * Resources is now CollectionModel
+ *
+ * PagedResources is now PagedModel
+ */
 
 @Controller
 //@RequiredArgsConstructor
@@ -34,7 +44,7 @@ public class EventController {
     }
 
 
-    @PostMapping
+    @PostMapping()
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
 
         // validation
@@ -48,12 +58,23 @@ public class EventController {
             return ResponseEntity.badRequest().body(errors);
         }
         Event event = modelMapper.map(eventDto, Event.class);
+        event.update(); //유료인지 무료인지 변경
 
         Event newEvent = this.eventRepository.save(event);
+        Integer eventId = newEvent.getId();
 
-        URI createdUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
-        event.setId(10);
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(eventId);
+        URI createdUri = selfLinkBuilder.toUri();
 
-        return ResponseEntity.created(createdUri).body(event);
+//        URI createdUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
+
+
+        EntityModel eventResource = EntityModel.of(newEvent);
+        eventResource.add(linkTo(EventController.class).slash(eventId).withSelfRel());
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
+        eventResource.add(selfLinkBuilder.withRel("update-event"));
+
+        return ResponseEntity.created(createdUri).body(eventResource);
+//        return ResponseEntity.created(createdUri).body(event);
     }
 }
