@@ -2,6 +2,7 @@ package com.valeos.restapidemo.events;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
@@ -73,6 +74,8 @@ public class EventController {
         eventResource.add(linkTo(EventController.class).slash(eventId).withSelfRel());
         eventResource.add(linkTo(EventController.class).withRel("query-events"));
         eventResource.add(selfLinkBuilder.withRel("update-event"));
+        eventResource.add(Link.of("/docs/index.html#resources-events-create_http_response", "profile"));
+
 
         return ResponseEntity.created(createdUri).body(eventResource);
 //        return ResponseEntity.created(createdUri).body(event);
