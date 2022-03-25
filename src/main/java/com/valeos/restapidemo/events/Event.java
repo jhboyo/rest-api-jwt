@@ -1,5 +1,6 @@
 package com.valeos.restapidemo.events;
 
+import com.valeos.restapidemo.accounts.Account;
 import lombok.*;
 
 import javax.persistence.*;
@@ -44,6 +45,9 @@ public class Event {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
+
+    @ManyToOne
+    private Account manager;
 
 
     public  void update() {
