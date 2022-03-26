@@ -1,5 +1,6 @@
 package com.valeos.restapidemo.events;
 
+import com.valeos.restapidemo.accounts.Account;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,4 +39,6 @@ public class EventDto {
     private int maxPrice; // (optional)
     @Min(0)
     private int limitOfEnrollment;
+
+    private Account manager;
 }
