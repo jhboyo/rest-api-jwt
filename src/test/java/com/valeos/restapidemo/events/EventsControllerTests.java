@@ -158,7 +158,6 @@ public class EventsControllerTests extends BaseTest {
 
 
     @Test
-//    @TestDescription("입력값이 비어 있는 경우에 에러가 발생하는 테스트")
     @DisplayName("입력값이 비어 있는 경우에 에러가 발생하는 테스트")
     public void createEvent_BadRequest_Empty_Input() throws Exception {
 
