@@ -1,7 +1,6 @@
 package com.valeos.restapidemo.members;
 
 import com.valeos.restapidemo.common.ErrorsResource;
-import com.valeos.restapidemo.events.EventController;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.EntityModel;
@@ -50,14 +49,19 @@ public class MemberController {
 
         Member member = optionalMember.get();
         MemberResource memberResource = new MemberResource(member);
+
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(MemberController.class).slash(id);
+
+        memberResource.add(linkTo(MemberController.class).withRel("query-members"));
+        memberResource.add(selfLinkBuilder.withRel("update-member"));
         memberResource.add(Link.of("/docs/index.html#resources-members-get").withRel("profile"));
 
         return ResponseEntity.ok(memberResource);
     }
 
 
-    @PostMapping
-    public ResponseEntity createMember(@RequestBody @Valid  MemberDto memberDto, Errors errors) {
+    @PostMapping()
+    public ResponseEntity createMember(@RequestBody @Valid MemberDto memberDto, Errors errors) {
 
         // validation
         memberValidator.validate(memberDto, errors);
@@ -70,13 +74,13 @@ public class MemberController {
 
         Integer memberId = newMember.getId();
 
-        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(memberId);
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(MemberController.class).slash(memberId);
         URI createdUri = selfLinkBuilder.toUri();
 
         MemberResource memberResource = new MemberResource(member);
-        memberResource.add(linkTo(MemberController.class).withRel("query-events"));
-        memberResource.add(selfLinkBuilder.withRel("update-event"));
-        memberResource.add(Link.of("/docs/index.html#resources-events-create").withRel("profile"));
+        memberResource.add(linkTo(MemberController.class).withRel("query-members"));
+        memberResource.add(selfLinkBuilder.withRel("update-member"));
+        memberResource.add(Link.of("/docs/index.html#resources-members-create").withRel("profile"));
 
         return ResponseEntity.created(createdUri).body(memberResource);
     }

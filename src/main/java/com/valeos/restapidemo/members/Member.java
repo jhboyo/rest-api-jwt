@@ -2,8 +2,10 @@ package com.valeos.restapidemo.members;
 
 import lombok.*;
 
-import javax.persistence.*;
-import java.util.Set;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 /**
  * @author joonhokim
@@ -12,7 +14,8 @@ import java.util.Set;
  */
 @Getter @Setter
 @Builder
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of= "id")
 @Entity
 public class Member {
@@ -36,15 +39,8 @@ public class Member {
     @Column(nullable = false, length = 100, unique = true)
     private String email;
 
-    @Column(nullable = false, length =6)
+    @Column(nullable = true, length =6)
     private String gender;
 
 
-//    @ElementCollection(fetch = FetchType.EAGER)
-//    @Enumerated(EnumType.STRING)
-//    private Set<MemberRole> roles;
-
-    @OneToMany
-    @JoinColumn(name="member")
-    public Set<MemberRole> roles;
 }
