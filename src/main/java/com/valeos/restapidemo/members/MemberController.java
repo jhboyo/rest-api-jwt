@@ -22,7 +22,6 @@ import java.util.Optional;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
-
 @RequiredArgsConstructor
 @Controller
 @RequestMapping(value = "/api/member", produces = MediaTypes.HAL_JSON_VALUE)
@@ -118,16 +117,16 @@ public class MemberController {
 
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody MemberLoginRequestDto memberLoginRequestDto, Errors errors) {
+    public ResponseEntity login(@RequestBody MemberRequestDto memberRequestDto, Errors errors) {
 
-        if (memberLoginRequestDto.getEmail() == null || memberLoginRequestDto.getPassword() == null) {
+        if (memberRequestDto.getEmail() == null || memberRequestDto.getPassword() == null) {
             return badRequest(errors);
         }
-        if (memberLoginRequestDto.getEmail().isBlank() || memberLoginRequestDto.getPassword().isBlank()) {
+        if (memberRequestDto.getEmail().isBlank() || memberRequestDto.getPassword().isBlank()) {
             return badRequest(errors);
         }
 
-        Member member = memberRepository.findByEmailAndPassword(memberLoginRequestDto.getEmail(), memberLoginRequestDto.getPassword());
+        Member member = memberRepository.findByEmailAndPassword(memberRequestDto.getEmail(), memberRequestDto.getPassword());
         if (member == null || member.getEmail().isBlank()) {
             return ResponseEntity.notFound().build();
         }
@@ -145,6 +144,18 @@ public class MemberController {
 
 
 
+    @GetMapping ("/logout")
+    public ResponseEntity logout(@RequestBody MemberRequestDto memberRequestDto, Errors errors) {
+
+        if (memberRequestDto == null) {
+            return badRequest(errors);
+        }
+
+        // TODO session 정보 등 제거
+
+        return ResponseEntity.ok().build();
+
+    }
 
 
     private ResponseEntity<EntityModel<Errors>> badRequest(Errors errors) {

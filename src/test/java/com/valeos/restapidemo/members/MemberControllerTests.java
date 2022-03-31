@@ -215,15 +215,15 @@ public class MemberControllerTests extends BaseTest {
 
         String loginEmail = "joomho1@email.com";
         String loginPassword = "passworD1234$";
-        MemberLoginRequestDto memberLoginRequestDto = new MemberLoginRequestDto();
-        memberLoginRequestDto.setEmail(loginEmail);
-        memberLoginRequestDto.setPassword(loginPassword);
+        MemberRequestDto memberRequestDto = new MemberRequestDto();
+        memberRequestDto.setEmail(loginEmail);
+        memberRequestDto.setPassword(loginPassword);
 
         // Then
         ResultActions resultActions = mockMvc.perform(post("/api/member/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON)
-                        .content(objectMapper.writeValueAsString(memberLoginRequestDto)))
+                        .content(objectMapper.writeValueAsString(memberRequestDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").exists())
