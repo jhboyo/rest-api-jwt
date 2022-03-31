@@ -57,6 +57,8 @@ dependencies {
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.1.0'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.6.4'
     //spring security
+    implementation 'org.springframework.boot:spring-boot-starter-security:2.6.5'
+
 //    implementation group: 'org.springframework.security.oauth.boot', name: 'spring-security-oauth2-autoconfigure', version: '2.6.3'
 
 

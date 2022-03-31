@@ -58,21 +58,21 @@ public class EventsControllerTests extends BaseTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON)
                         .content(objectMapper.writeValueAsString(event)))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("id").exists())
-                .andExpect(header().exists(HttpHeaders.LOCATION))
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
-                .andExpect((jsonPath("free").value(false)))
-                .andExpect((jsonPath("offline").value(true)))
-                .andExpect((jsonPath("eventStatus").value(EventStatus.DRAFT.name())))
-                .andDo(document("create-event",
-                        links(
-                                linkWithRel("self").description("link to self"),
-                                linkWithRel("query-events").description("link to query-events"),
-                                linkWithRel("update-event").description("link to update a existing events"),
-                                linkWithRel("profile").description("link to profile")
-                        ),
+                        .andDo(print())
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("id").exists())
+                        .andExpect(header().exists(HttpHeaders.LOCATION))
+                        .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+                        .andExpect((jsonPath("free").value(false)))
+                        .andExpect((jsonPath("offline").value(true)))
+                        .andExpect((jsonPath("eventStatus").value(EventStatus.DRAFT.name())))
+                        .andDo(document("create-event",
+                            links(
+                                    linkWithRel("self").description("link to self"),
+                                    linkWithRel("query-events").description("link to query-events"),
+                                    linkWithRel("update-event").description("link to update a existing events"),
+                                    linkWithRel("profile").description("link to profile")
+                            ),
                         requestHeaders(
                                 headerWithName(HttpHeaders.ACCEPT).description("accept header"),
                                 headerWithName(HttpHeaders.CONTENT_TYPE).description("content header")
