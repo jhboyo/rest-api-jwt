@@ -9,13 +9,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.stream.IntStream;
+
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -108,6 +109,130 @@ public class MemberControllerTests extends BaseTest {
                                 fieldWithPath("_links.profile.href").description("link to profile")
                         )
                 ));
+    }
+
+
+
+
+    @Test
+    @DisplayName("10명의 사용자를 5명씩 두번째 페이지 조회하기")
+    public void queryMembers() throws Exception {
+        //Given
+        IntStream.range(0, 10).forEach(this::generateMembers);
+
+        // When & Then
+        this.mockMvc.perform(get("/api/member")
+                        .param("name", "")
+                        .param("email", "")
+                        .param("page", "1")
+                        .param("size", "5")
+                        .param("sort", "name,DESC"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("page").exists())
+//                .andExpect(jsonPath("_embedded.memberList[0]._links.self").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("query-members"))
+        ;
+    }
+
+
+    @Test
+    @DisplayName("사용자를 이름과 이메일로 조회 후 2명씩 두번째 페이지 조회하기")
+    public void queryMembersByNameAndEmail() throws Exception {
+        //Given
+        IntStream.range(0, 10).forEach(this::generateMembers);
+
+        // When & Then
+        this.mockMvc.perform(get("/api/member")
+                        .param("name", "member1")
+                        .param("email", "member@email.com1")
+                        .param("page", "0")
+                        .param("size", "5")
+                        .param("sort", "name,DESC"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("page").exists())
+//                .andExpect(jsonPath("_embedded.memberList[0]._links.self").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("query-members"))
+        ;
+    }
+
+
+
+    private Member generateMembers(int index) {
+        MemberDto memberDto = buildMembers(index);
+
+        Member member = modelMapper.map(memberDto, Member.class);
+
+        return this.memberRepository.save(member);
+    }
+
+
+
+    private MemberDto buildMembers(int index) {
+        return MemberDto.builder()
+                .name("member" + index)
+                .nickname("nickname" + index)
+                .password("passWord$12345" + Integer.toString(index))
+                .cellphone("0101122" + Integer.toString(index))
+                .email("member@email.com" + Integer.toString(index))
+                .gender("male")
+                .build();
+    }
+
+
+    @Test
+    @DisplayName("사용자 로그인 테스트")
+    public void loginMember() throws Exception {
+
+        // Given
+        String username = "joonhokim";
+        String nickname = "derek";
+        String password = "passworD1234$";
+        String email = "joomho1@email.com";
+        String cellphone = "01099857514";
+        String gender = "male";
+
+        // When
+        MemberDto memberDto = MemberDto.builder()
+                .name(username)
+                .nickname(nickname)
+                .password(password)
+                .email(email)
+                .cellphone(cellphone)
+                .gender(gender)
+                .build()
+                ;
+
+        Member member = modelMapper.map(memberDto, Member.class);
+        memberRepository.save(member);
+
+        System.out.println("****** Email: " + member.getEmail());
+
+        String loginEmail = "joomho1@email.com";
+        String loginPassword = "passworD1234$";
+        MemberLoginRequestDto memberLoginRequestDto = new MemberLoginRequestDto();
+        memberLoginRequestDto.setEmail(loginEmail);
+        memberLoginRequestDto.setPassword(loginPassword);
+
+        // Then
+        ResultActions resultActions = mockMvc.perform(post("/api/member/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON)
+                        .content(objectMapper.writeValueAsString(memberLoginRequestDto)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("name").exists())
+                .andExpect(jsonPath("email").exists())
+                .andExpect(jsonPath("cellphone").exists())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8"))
+
+                ;
     }
 
 }

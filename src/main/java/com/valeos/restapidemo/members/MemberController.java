@@ -3,6 +3,9 @@ package com.valeos.restapidemo.members;
 import com.valeos.restapidemo.common.ErrorsResource;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
@@ -18,11 +21,8 @@ import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
-/**
- * @description
- * @author joonhokim
- * @date 2022/03/31
- */
+
+
 @RequiredArgsConstructor
 @Controller
 @RequestMapping(value = "/api/member", produces = MediaTypes.HAL_JSON_VALUE)
@@ -36,7 +36,7 @@ public class MemberController {
 
     /**
      * @apiNote 단일 회원 상세 정보 조회
-     * @param id
+     * @param id 회원 고유 번호
      * @return ..
      */
     @GetMapping("/{id}")
@@ -58,6 +58,36 @@ public class MemberController {
 
         return ResponseEntity.ok(memberResource);
     }
+
+
+    /**
+     * @apiNote 여러 회원 목록 정보 조회
+     * @param
+     * @return ..
+     */
+    @GetMapping()
+    public ResponseEntity queryMembers(@RequestParam String name,
+                                       @RequestParam String email,
+                                       Pageable pageable,
+                                       PagedResourcesAssembler<Member> assembler) {
+
+        //assembler를 통해서 repository로부터 받아온 데이터를 resource로 변환이 가능하다.
+
+        Page<Member> page = null;
+        if (name.isBlank() && email.isBlank()) {
+            page = this.memberRepository.findAll(pageable);
+        } else {
+            page = this.memberRepository.findMembersByNameAndEmail(name, email, pageable);
+        }
+
+//        Page<Member> page = this.memberRepository.findMembersByNameAndEmail(name, email, pageable);
+
+        var pagedResources = assembler.toModel(page, e -> new MemberResource(e));
+        pagedResources.add(Link.of("/docs/index.html#resources-members-list").withRel("profile"));
+
+        return ResponseEntity.ok(pagedResources);
+    }
+
 
 
     @PostMapping()
@@ -84,6 +114,37 @@ public class MemberController {
 
         return ResponseEntity.created(createdUri).body(memberResource);
     }
+
+
+
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody MemberLoginRequestDto memberLoginRequestDto, Errors errors) {
+
+        if (memberLoginRequestDto.getEmail() == null || memberLoginRequestDto.getPassword() == null) {
+            return badRequest(errors);
+        }
+        if (memberLoginRequestDto.getEmail().isBlank() || memberLoginRequestDto.getPassword().isBlank()) {
+            return badRequest(errors);
+        }
+
+        Member member = memberRepository.findByEmailAndPassword(memberLoginRequestDto.getEmail(), memberLoginRequestDto.getPassword());
+        if (member == null || member.getEmail().isBlank()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(MemberController.class).slash(member.getId());
+        URI createdUri = selfLinkBuilder.toUri();
+
+        MemberResource memberResource = new MemberResource(member);
+        memberResource.add(linkTo(MemberController.class).withRel("logout-member"));
+        memberResource.add(Link.of("/docs/index.html#resources-members-login").withRel("profile"));
+
+        return ResponseEntity.ok(memberResource);
+    }
+
+
+
+
 
 
     private ResponseEntity<EntityModel<Errors>> badRequest(Errors errors) {
