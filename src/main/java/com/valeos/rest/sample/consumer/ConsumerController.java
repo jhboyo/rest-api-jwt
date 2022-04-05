@@ -65,7 +65,6 @@ public class ConsumerController {
 
     @PostMapping("/signup")
     public ResponseEntity<Consumer> signup(@Valid @RequestBody UserDto userDto) {
-        logger.info("sss");
         return ResponseEntity.ok(consumerService.signup(userDto));
     }
 
@@ -77,7 +76,7 @@ public class ConsumerController {
 
 
     @GetMapping("/consumer/{username}")
-    @PreAuthorize("hasAnyRole('ADMIN')") // USER 와 ADMIN Role 모두 호출 가능
+    @PreAuthorize("hasAnyRole('ADMIN')") // ADMIN Role 호출 가능
     public ResponseEntity<Consumer> getConsumerInfo(@PathVariable String username) {
         return ResponseEntity.ok(consumerService.getConsumerWithAuthorities(username).get());
     }

@@ -101,6 +101,7 @@ public class TokenProvider implements InitializingBean {
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
         } catch (SecurityException | MalformedJwtException e) {
             logger.info("Wrong JWT Signature");
         } catch (ExpiredJwtException e) {
